@@ -1,6 +1,6 @@
 {
   "name": "fukayo-sources",
-  "version": "0.0.1",
+  "version": "0.0.6",
   "description": "Fukayo's sources",
   "type": "module",
   "files": [
