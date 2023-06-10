@@ -18,7 +18,7 @@ function getId (input: string): string {
 
 const all = Object
   .keys(hack)
-  .map(key => Object.assign({}, { id: getId(key), version: getVersion(hack[key]), url: `https://github.com/fukayo/sources/releases/download/${args[0]}/all.json` }))
+  .map(key => Object.assign({}, { id: getId(key), version: getVersion(hack[key]), url: `https://github.com/fukayo/sources/releases/download/${args[0]}/${getId(key)}.js` }))
 
 writeFileSync(resolve(DIRNAME, 'all.json'), JSON.stringify(all))
 rmSync(FILENAME)
