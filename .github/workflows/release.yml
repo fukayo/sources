@@ -68,14 +68,6 @@ jobs:
           include-commit-body: true
           include-abbreviated-commit: true
 
-      - name: Waiting on All checks
-        if: steps.version-updated.outputs.has-updated == 'true'
-        uses: lewagon/wait-on-check-action@v0.2
-        with:
-          ref: ${{ github.ref }}
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          running-workflow-name: 'draft'
-
       - name: Delete outdated drafts
         if: steps.version-updated.outputs.has-updated == 'true'
         uses: hugo19941994/delete-draft-releases@v1.0.1
