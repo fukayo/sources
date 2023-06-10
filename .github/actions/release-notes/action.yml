@@ -22,4 +22,4 @@ outputs:
     description: 'JSON formatted Release notes'
 runs:
   using: 'node16'
-  main: 'main.js'
+  main: 'main.cjs'
