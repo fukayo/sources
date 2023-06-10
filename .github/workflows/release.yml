@@ -78,6 +78,7 @@ jobs:
         if: steps.version-updated.outputs.has-updated == 'true'
         run: |
           npm ci
+          npm run build
           npm run start
 
       - name: Create Release
