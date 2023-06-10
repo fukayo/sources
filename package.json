@@ -1,0 +1,77 @@
+{
+  "name": "fukayo-sources",
+  "version": "0.0.1",
+  "description": "Fukayo's sources",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "scripts": {
+    "build": "npm run build:prod",
+    "build:dev": "cross-env NODE_ENV=development vite build --mode development",
+    "build:prod": "cross-env NODE_ENV=production vite build --mode production",
+    "release:patch": "node ./scripts/release.js --patch",
+    "release:minor": "node ./scripts/release.js --minor",
+    "release:major": "node ./scripts/release.js --major",
+    "release:patch:dry": "node ./scripts/release.js --patch --dry",
+    "release:minor:dry": "node ./scripts/release.js --minor --dry",
+    "release:major:dry": "node ./scripts/release.js --major --dry",
+    "lint": "eslint ./src --ext js,ts",
+    "start": "node ./dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fukayo/backend.git"
+  },
+  "license": "MIT",
+  "author": "Jean-Philippe Allegro <jipai13@gmail.com>",
+  "contributors": [
+    {
+      "name": "Farah Nur"
+    }
+  ],
+  "bugs": {
+    "url": "https://github.com/fukayo/sources/issues"
+  },
+  "homepage": "https://github.com/fukayo/sources#readme",
+  "keywords": [
+    "fukayo",
+    "mangas",
+    "manga",
+    "scrapper",
+    "reader",
+    "Fukayo",
+    "Manga",
+    "Mangas",
+    "Scrapper",
+    "Reader"
+  ],
+  "funding": [
+    "https://paypal.fukayo.com/",
+    "https://patreon.com/Fukayo",
+    "https://github.com/JiPaix"
+  ],
+  "devDependencies": {
+    "@types/axios": "^0.14.0",
+    "@types/cheerio": "^0.22.31",
+    "@types/node": "^20.2.6",
+    "@types/puppeteer-core": "^7.0.4",
+    "@typescript-eslint/eslint-plugin": "^5.59.8",
+    "cross-env": "^7.0.3",
+    "eslint": "^8.42.0",
+    "eslint-config-standard-with-typescript": "^35.0.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-n": "^15.7.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "simple-git": "^3.19.0",
+    "typescript": "^5.1.3",
+    "vite": "^4.3.9",
+    "vite-node": "^0.31.4",
+    "vite-plugin-dts": "^2.3.0"
+  }
+}
