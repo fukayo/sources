@@ -87,7 +87,8 @@ jobs:
           npm run start
 
       - name: Create Release Draft
-        uses: ncipollo/release-action@v1.11.1
+        if: steps.version-updated.outputs.has-updated == 'true'
+        uses: ncipollo/release-action@v1.12.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
