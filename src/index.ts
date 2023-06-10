@@ -1,10 +1,10 @@
-import { writeFileSync } from 'fs'
+import { rmSync, writeFileSync } from 'fs'
 import { fileURLToPath } from 'url'
 import { dirname, resolve } from 'path'
 
-const FN = fileURLToPath(import.meta.url)
+const FILENAME = fileURLToPath(import.meta.url)
 
-const DIRNAME = dirname(FN)
+const DIRNAME = dirname(FILENAME)
 export const hack = import.meta.glob(['./*.ts', './*.js', '!./*.d.ts'], { eager: true })
 
 function getVersion (input: unknown): number {
@@ -21,3 +21,4 @@ const all = Object
   .map(key => Object.assign({}, { id: getId(key), version: getVersion(hack[key]) }))
 
 writeFileSync(resolve(DIRNAME, 'all.json'), JSON.stringify(all))
+rmSync(FILENAME)

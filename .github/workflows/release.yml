@@ -87,7 +87,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          artifacts: "dist/*.js,dist/*.json,!dist/index.js"
+          artifacts: "dist/*.js,dist/*.json"
           tag: v${{ steps.version.outputs.build-version }}
           name: v${{ steps.version.outputs.build-version }}
           body: ${{ steps.release-note.outputs.release-note }}
