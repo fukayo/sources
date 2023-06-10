@@ -1,8 +1,8 @@
-name: Release
+name: Release Beta
 on:
   push:
     branches:
-      - main
+      - beta
     paths-ignore:
       - '**.md'
       - '**.spec.js'
@@ -49,12 +49,12 @@ jobs:
       - name: Get version
         if: steps.version-updated.outputs.has-updated == 'true'
         id: version
-        run: echo "build-version=${{steps.version-updated.outputs.current-package-version}}" >> $GITHUB_OUTPUT
+        run: echo "build-version=${{steps.version-updated.outputs.current-package-version}}-beta" >> $GITHUB_OUTPUT
 
       - name: Get last git tag
         if: steps.version-updated.outputs.has-updated == 'true'
         id: tag
-        run: echo "last-tag=$(git describe --tags --abbrev=0 --exclude "*beta" ${{github.ref}})" >> $GITHUB_OUTPUT
+        run: echo "last-tag=$(git describe --tags --abbrev=0 --match "*-beta" ${{github.ref}})" >> $GITHUB_OUTPUT
 
       - name: Generate release notes
         if: steps.version-updated.outputs.has-updated == 'true'
@@ -86,21 +86,13 @@ jobs:
           npm ci
           npm run start
 
-      - name: Create Release
-        if: steps.version-updated.outputs.has-updated == 'true'
+      - name: Create Release Draft
         uses: ncipollo/release-action@v1.11.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          prerelease: true
           artifacts: "dist/*.js,dist/*.json,!dist/index.js"
           tag: v${{ steps.version.outputs.build-version }}
           name: v${{ steps.version.outputs.build-version }}
           body: ${{ steps.release-note.outputs.release-note }}
-
-      - name: Fast foward
-        run: |
-          git config --local user.email "actions@github.com"
-          git config --local user.name "Github Actions"
-          git checkout beta
-          git pull origin main
-          git push origin beta
