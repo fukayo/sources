@@ -29,15 +29,14 @@ class Mangadex implements Source {
 
   async search (query: string, requestedLangs: mirrorsLangsType[]): Promise<searchResponse | SourceError> {
     if (!this.#scrapper) return { success: false, message: 'init_error' }
-    const resp = await this.#scrapper.getCrawler<Routes['/manga/{search}']['ok'] | Routes['/manga/{search}']['err']>('https://api.mangadex.org/manga', 'json',
-      {
-        params: {
-          title: query,
-          contentRating: ['safe', 'suggestive', 'erotica', 'pornographic'],
-          limit: 16
-        }
-      }
-    )
+
+    const language = requestedLangs.map(l => `availableTranslatedLanguage[]=${l}`).join('&')
+    const rating = ['safe', 'suggestive', 'erotica', 'pornographic'].map(c => `contentRating[]=${c}`).join('&')
+    const order = ['includes[]=cover_art', 'order[relevance]=desc'].join('&')
+    const limit = 'limit=16'
+
+    const requestURL = `${this.#baseURL}/manga?title=${query}&${language}&${rating}&${order}&${limit}`
+    const resp = await this.#scrapper.getCrawler<Routes['/manga/{search}']['ok'] | Routes['/manga/{search}']['err']>(requestURL, 'json')
 
     if (!resp) return { success: false, message: 'unknown_error' }
     if (resp.result !== 'ok') return { success: false, message: resp.errors[0].detail }
@@ -58,11 +57,14 @@ class Mangadex implements Source {
         }).filter(f => f.synopsis) as Array<{ lang: mirrorsLangsType, synopsis: string }>
 
         const lastChapter =
-      result.attributes.lastChapter && isNaN(parseFloat(result.attributes.lastChapter))
-        ? { chapter: parseFloat(result.attributes.lastChapter) }
-        : undefined
+          result.attributes.lastChapter && isNaN(parseFloat(result.attributes.lastChapter))
+            ? { chapter: parseFloat(result.attributes.lastChapter) }
+            : undefined
 
         const langs = result.attributes.availableTranslatedLanguages.filter(Boolean)
+
+        const contentRating = result.attributes.contentRating
+        const isNSFW = contentRating === 'erotica' || contentRating === 'pornographic'
 
         return {
           name,
@@ -70,7 +72,8 @@ class Mangadex implements Source {
           covers: coverURL ? [coverURL] : [],
           langs: langs.length ? langs : ['xx'],
           descriptions,
-          lastChapter: lastChapter?.chapter
+          lastChapter: lastChapter?.chapter,
+          nsfw: isNSFW
         }
       })
     }

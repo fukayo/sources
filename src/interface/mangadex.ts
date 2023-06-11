@@ -17,6 +17,7 @@ export interface MangaAttributes {
     }
   }>
   availableTranslatedLanguages: mirrorsLangsType[]
+  contentRating: 'safe' | 'suggestive' | 'erotica' | 'pornographic' | null | undefined
 }
 
 export interface ChapterAttributes {

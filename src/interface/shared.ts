@@ -22,4 +22,5 @@ export type searchResponse = SourceResponse<Array<{
     synopsis: string
   }>
   lastChapter?: number
+  nsfw: boolean
 }>>
