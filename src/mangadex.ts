@@ -35,7 +35,7 @@ class Mangadex implements Source {
       params: {
         title: query,
         limit: 16,
-        rating: ['safe', 'suggestive', 'erotica', 'pornographic'],
+        contentRating: ['safe', 'suggestive', 'erotica', 'pornographic'],
         order: { relevance: 'desc' },
         availableTranslatedLanguage: requestedLangs,
         includes: ['cover_art']
