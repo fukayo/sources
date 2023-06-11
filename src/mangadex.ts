@@ -1,12 +1,18 @@
 
 import { type SourceResponse, type SourceError } from './interface/shared.js'
-import type { Crawler as ICrawler } from './interface/abstract.js'
+import type { CrawlerInstance, Source } from './interface/abstract.js'
 
-class Mangadex {
+const settings = {
+  version: 0,
+  localSource: false,
+  puppeteer: false
+}
+
+class Mangadex implements Source {
   static #instance: Mangadex
-  #scrapper?: ICrawler
+  #scrapper?: CrawlerInstance
 
-  static async getInstance (crawler: ICrawler): Promise<Mangadex> {
+  static async getInstance (crawler: CrawlerInstance): Promise<Mangadex> {
     if (!(this.#instance instanceof Mangadex)) {
       this.#instance = new this()
       this.#instance.#scrapper = crawler
@@ -16,7 +22,7 @@ class Mangadex {
 
   async search<T> (query: string): Promise<SourceResponse<T> | SourceError> {
     if (!this.#scrapper) return { success: false, message: 'init_error' }
-    const resp = await this.#scrapper?.getCrawler('https://api.mangadex.org', 'json')
+    const resp = await this.#scrapper?.getCrawler('https://api.mangadex.org/manga', 'json', { params: { title: query }, skipCache: { from: true, to: true } })
     return {
       success: true,
       data: resp as T
@@ -24,5 +30,5 @@ class Mangadex {
   }
 }
 
-export const version = 0
+export const { version, localSource, puppeteer } = settings
 export default Mangadex
