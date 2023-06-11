@@ -1,7 +1,8 @@
 import { type Protocol } from 'puppeteer-core'
 import { type AxiosRequestConfig } from 'axios'
 import type * as cheerio from 'cheerio'
-import { type SourceError, type SourceResponse } from './shared.js'
+import { type searchResponse, type SourceError } from './shared.js'
+import { type mirrorsLangsType } from 'fukayo-langs'
 
 export interface puppeteerOpts {
   auth?: {
@@ -62,7 +63,7 @@ export interface CrawlerInstance {
 }
 
 export interface Source {
-  search: <T>(query: string) => Promise<SourceResponse<T> | SourceError>
+  search: (query: string, requestedLangs: mirrorsLangsType[]) => Promise<searchResponse | SourceError>
 }
 
 export type { Crawler }
