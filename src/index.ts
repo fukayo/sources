@@ -2,7 +2,7 @@ import { rmSync, writeFileSync } from 'fs'
 import { fileURLToPath } from 'url'
 import { dirname, resolve } from 'path'
 const args = process.argv.slice(2)
-if (!args[0]?.startsWith('v')) throw Error(`bad tag:${args}`)
+if (!args[0]?.startsWith('v')) throw Error(`bad tag:${args[0]}`)
 const FILENAME = fileURLToPath(import.meta.url)
 
 const DIRNAME = dirname(FILENAME)
