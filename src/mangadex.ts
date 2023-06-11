@@ -30,13 +30,17 @@ class Mangadex implements Source {
   async search (query: string, requestedLangs: mirrorsLangsType[]): Promise<searchResponse | SourceError> {
     if (!this.#scrapper) return { success: false, message: 'init_error' }
 
-    const language = requestedLangs.map(l => `availableTranslatedLanguage[]=${l}`).join('&')
-    const rating = ['safe', 'suggestive', 'erotica', 'pornographic'].map(c => `contentRating[]=${c}`).join('&')
-    const order = ['includes[]=cover_art', 'order[relevance]=desc'].join('&')
-    const limit = 'limit=16'
-
-    const requestURL = `${this.#baseURL}/manga?title=${query}&${language}&${rating}&${order}&${limit}`
-    const resp = await this.#scrapper.getCrawler<Routes['/manga/{search}']['ok'] | Routes['/manga/{search}']['err']>(requestURL, 'json')
+    const requestURL = `${this.#baseURL}/manga`
+    const resp = await this.#scrapper.getCrawler<Routes['/manga/{search}']['ok'] | Routes['/manga/{search}']['err']>(requestURL, 'json', {
+      params: {
+        title: query,
+        limit: 16,
+        rating: ['safe', 'suggestive', 'erotica', 'pornographic'],
+        order: { relevance: 'desc' },
+        availableTranslatedLanguage: requestedLangs,
+        includes: ['cover_art']
+      }
+    })
 
     if (!resp) return { success: false, message: 'unknown_error' }
     if (resp.result !== 'ok') return { success: false, message: resp.errors[0].detail }
@@ -61,7 +65,7 @@ class Mangadex implements Source {
             ? { chapter: parseFloat(result.attributes.lastChapter) }
             : undefined
 
-        const langs = result.attributes.availableTranslatedLanguages.filter(Boolean)
+        const langs = result.attributes.availableTranslatedLanguages.filter(l => requestedLangs.includes(l))
 
         const contentRating = result.attributes.contentRating
         const isNSFW = contentRating === 'erotica' || contentRating === 'pornographic'
