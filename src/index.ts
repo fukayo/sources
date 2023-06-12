@@ -17,8 +17,9 @@ const all = Object
     if (!icon) throw Error(`${publicSettings.id} has no icon`)
     return {
       ...publicSettings,
-      url: `https://github.com/fukayo/sources/releases/download/${args[0]}/${publicSettings.id}.js`,
-      icon: `https://github.com/fukayo/sources/releases/download/${args[0]}/${icon}`
+      baseURL: `https://github.com/fukayo/sources/releases/download/${args[0]}`,
+      js: `${publicSettings.id}.js`,
+      icon: `${icon}`
     }
   })
 

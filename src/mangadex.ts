@@ -1,10 +1,11 @@
+import type EventEmitter from 'events'
 import { mirrorsLang, type mirrorsLangsType } from 'fukayo-langs'
-import type { Crawler, CrawlerInstance, Source } from './interface/abstract.js'
+import type { Crawler, CrawlerInstance, Source, searchResponse } from './interface/abstract.js'
 import { type Routes } from './interface/mangadex.js'
-import { type SourceError, type searchResponse } from './interface/shared.js'
 
 export const publicSettings = {
   id: 'mangadex',
+  displayName: 'Mangadex',
   version: 0,
   localSource: false,
   puppeteer: false,
@@ -16,6 +17,8 @@ export default class Mangadex implements Source {
   static #instance: Mangadex
   #scrapper?: CrawlerInstance
   #baseURL = 'https://api.mangadex.org'
+  id = publicSettings.id
+  displayName = publicSettings.displayName
 
   static async getInstance (crawler: Crawler): Promise<Mangadex> {
     if (!(this.#instance instanceof Mangadex)) {
@@ -29,8 +32,16 @@ export default class Mangadex implements Source {
     return this.#instance
   }
 
-  async search (query: string, requestedLangs: mirrorsLangsType[]): Promise<searchResponse | SourceError> {
-    if (!this.#scrapper) return { success: false, message: 'init_error' }
+  async search (event: EventEmitter, query: string, requestedLangs: mirrorsLangsType[]): Promise<unknown> {
+    // check if src has been imported using .getInstance
+    if (!this.#scrapper) throw Error('source must be initialized w/ getInstance()')
+    // cancel signal
+    let cancel = false
+    event.once('cancel', () => {
+      cancel = true
+    })
+
+    if (cancel) return
 
     const requestURL = `${this.#baseURL}/manga`
     const resp = await this.#scrapper.getCrawler<Routes['/manga/{search}']['ok'] | Routes['/manga/{search}']['err']>(requestURL, 'json', {
@@ -44,44 +55,42 @@ export default class Mangadex implements Source {
       }
     })
 
-    if (!resp) return { success: false, message: 'unknown_error' }
-    if (resp.result !== 'ok') return { success: false, message: resp.errors[0].detail }
+    if (!resp) throw Error('no_data')
+    if (resp.result !== 'ok') throw Error('api_response:' + resp.errors[0].detail)
 
-    return {
-      success: true,
-      data: resp.data.map(result => {
-        const name = result.attributes.title[Object.keys(result.attributes.title)[0]]
-        let coverURL: undefined | string
-        const coverData = result.relationships.find(x => x.type === 'cover_art')
-        if (coverData && coverData.type === 'cover_art') coverURL = coverData.attributes.fileName
-        // search for synopsis that matches requestedLangs
-        const descriptions = requestedLangs.map(m => {
-          return {
-            lang: m,
-            synopsis: result.attributes.description[m]
-          }
-        }).filter(f => f.synopsis) as Array<{ lang: mirrorsLangsType, synopsis: string }>
-
-        const lastChapter =
-          result.attributes.lastChapter && isNaN(parseFloat(result.attributes.lastChapter))
-            ? { chapter: parseFloat(result.attributes.lastChapter) }
-            : undefined
-
-        const langs = result.attributes.availableTranslatedLanguages.filter(l => requestedLangs.includes(l))
-
-        const contentRating = result.attributes.contentRating
-        const isNSFW = contentRating === 'erotica' || contentRating === 'pornographic'
-
+    resp.data.forEach(result => {
+      const name = result.attributes.title[Object.keys(result.attributes.title)[0]]
+      let coverURL: undefined | string
+      const coverData = result.relationships.find(x => x.type === 'cover_art')
+      if (coverData && coverData.type === 'cover_art') coverURL = coverData.attributes.fileName
+      // search for synopsis that matches requestedLangs
+      const descriptions = requestedLangs.map(m => {
         return {
-          name,
-          url: `/manga/${result.id}`,
-          covers: coverURL ? [coverURL] : [],
-          langs: langs.length ? langs : ['xx'],
-          descriptions,
-          lastChapter: lastChapter?.chapter,
-          nsfw: isNSFW
+          lang: m,
+          synopsis: result.attributes.description[m]
         }
-      })
-    }
+      }).filter(f => f.synopsis) as Array<{ lang: mirrorsLangsType, synopsis: string }>
+
+      const lastChapter =
+        result.attributes.lastChapter && isNaN(parseFloat(result.attributes.lastChapter))
+          ? { chapter: parseFloat(result.attributes.lastChapter) }
+          : undefined
+
+      const langs = result.attributes.availableTranslatedLanguages.filter(l => requestedLangs.includes(l))
+
+      const contentRating = result.attributes.contentRating
+      const isNSFW = contentRating === 'erotica' || contentRating === 'pornographic'
+      const data: searchResponse = {
+        name,
+        url: `/manga/${result.id}`,
+        covers: coverURL ? [coverURL] : [],
+        langs: langs.length ? langs : ['xx'],
+        descriptions,
+        lastChapter: lastChapter?.chapter,
+        nsfw: isNSFW
+      }
+      event.emit('data', data)
+    })
+    event.emit('done')
   }
 }
