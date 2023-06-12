@@ -4,7 +4,8 @@ import type { Crawler, CrawlerInstance, Source } from './interface/abstract.js'
 import { type Routes } from './interface/mangadex.js'
 import type { mirrorsLangsType } from 'fukayo-langs'
 
-const settings = {
+export const publicSettings = {
+  id: 'mangadex',
   version: 0,
   localSource: false,
   puppeteer: false
