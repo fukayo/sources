@@ -10,6 +10,7 @@ const config = {
   mode,
   root: PACKAGE_ROOT,
   envDir: process.cwd(),
+  publicDir: './src/public',
   build: {
     target: 'esnext',
     outDir: 'dist',

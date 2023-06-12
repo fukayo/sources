@@ -1,17 +1,18 @@
-
-import { type SourceError, type searchResponse } from './interface/shared.js'
+import { mirrorsLang, type mirrorsLangsType } from 'fukayo-langs'
 import type { Crawler, CrawlerInstance, Source } from './interface/abstract.js'
 import { type Routes } from './interface/mangadex.js'
-import type { mirrorsLangsType } from 'fukayo-langs'
+import { type SourceError, type searchResponse } from './interface/shared.js'
 
 export const publicSettings = {
   id: 'mangadex',
   version: 0,
   localSource: false,
-  puppeteer: false
+  puppeteer: false,
+  langs: mirrorsLang,
+  hostnames: ['mangadex.org']
 }
 
-class Mangadex implements Source {
+export default class Mangadex implements Source {
   static #instance: Mangadex
   #scrapper?: CrawlerInstance
   #baseURL = 'https://api.mangadex.org'
@@ -84,6 +85,3 @@ class Mangadex implements Source {
     }
   }
 }
-
-export const { version, localSource, puppeteer } = settings
-export default Mangadex
