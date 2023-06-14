@@ -67,16 +67,19 @@ export interface Source {
 }
 
 export interface searchResponse {
-  name: string
-  url: string
-  covers: string[]
-  langs: mirrorsLangsType[]
-  descriptions: Array<{
-    lang: mirrorsLangsType
-    synopsis: string
-  }>
-  lastChapter?: number
-  nsfw: boolean
+  success: true
+  data: {
+    name: string
+    url: string
+    covers: string[]
+    langs: mirrorsLangsType[]
+    descriptions: Array<{
+      lang: mirrorsLangsType
+      synopsis: string
+    }>
+    lastChapter?: number
+    nsfw: boolean
+  }
 }
 
 export type { Crawler }

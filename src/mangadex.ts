@@ -81,13 +81,16 @@ export default class Mangadex implements Source {
       const contentRating = result.attributes.contentRating
       const isNSFW = contentRating === 'erotica' || contentRating === 'pornographic'
       const data: searchResponse = {
-        name,
-        url: `/manga/${result.id}`,
-        covers: coverURL ? [coverURL] : [],
-        langs: langs.length ? langs : ['xx'],
-        descriptions,
-        lastChapter: lastChapter?.chapter,
-        nsfw: isNSFW
+        success: true,
+        data: {
+          name,
+          url: `/manga/${result.id}`,
+          covers: coverURL ? [coverURL] : [],
+          langs: langs.length ? langs : ['xx'],
+          descriptions,
+          lastChapter: lastChapter?.chapter,
+          nsfw: isNSFW
+        }
       }
       event.emit('data', data)
     })
