@@ -1,36 +1,26 @@
 import type EventEmitter from 'events'
 import { mirrorsLang, type mirrorsLangsType } from 'fukayo-langs'
-import type { Crawler, CrawlerInstance, Source, searchResponse } from './interface/abstract.js'
-import { type Routes } from './interface/mangadex.js'
+import { Base } from '../abstracts/base.js'
+import type { CrawlerInstance, PublicSettings } from '../interface/sources/index.js'
+import { type Routes } from '../interface/sources/mangadex.js'
 
-export const publicSettings = {
+export const publicSettings: PublicSettings = {
   id: 'mangadex',
   displayName: 'Mangadex',
+  login: true,
   version: 0,
   localSource: false,
   puppeteer: false,
-  langs: mirrorsLang,
+  langs: mirrorsLang.map(x => x), // <= .map fixes typescript non-sense,
   hostnames: ['mangadex.org']
 }
 
-export default class Mangadex implements Source {
-  static #instance: Mangadex
-  #scrapper?: CrawlerInstance
-  #baseURL = 'https://api.mangadex.org'
+export default class Mangadex extends Base {
   id = publicSettings.id
   displayName = publicSettings.displayName
 
-  static async getInstance (crawler: Crawler): Promise<Mangadex> {
-    if (!(this.#instance instanceof Mangadex)) {
-      this.#instance = new this()
-      this.#instance.#scrapper = await crawler.getInstance({
-        matches: [new URL(this.#instance.#baseURL).host],
-        points: 5,
-        duration: 1000
-      })
-    }
-    return this.#instance
-  }
+  #scrapper?: CrawlerInstance
+  #baseURL = 'https://api.mangadex.org'
 
   async search (event: EventEmitter, query: string, requestedLangs: mirrorsLangsType[]): Promise<unknown> {
     // check if src has been imported using .getInstance
@@ -43,20 +33,22 @@ export default class Mangadex implements Source {
 
     if (cancel) return
 
+    // preparing request parameters
     const requestURL = `${this.#baseURL}/manga`
-    const resp = await this.#scrapper.getCrawler<Routes['/manga/{search}']['ok'] | Routes['/manga/{search}']['err']>(requestURL, 'json', {
-      params: {
-        title: query,
-        limit: 16,
-        contentRating: ['safe', 'suggestive', 'erotica', 'pornographic'],
-        order: { relevance: 'desc' },
-        availableTranslatedLanguage: requestedLangs,
-        includes: ['cover_art']
-      }
-    })
 
-    if (!resp) throw Error('no_data')
-    if (resp.result !== 'ok') throw Error('api_response:' + resp.errors[0].detail)
+    const contentRating = ['safe', 'suggestive']
+    if (this.options?.booleans?.find(f => f.name === 'mangadex_erotica')?.value === true) contentRating.push('erotica')
+    if (this.options?.booleans?.find(f => f.name === 'mangadex_pornographic')?.value === true) contentRating.push('pornographic')
+
+    const params = { title: query, limit: 16, contentRating, order: { revelance: 'desc' }, availableTranslatedLanguage: requestedLangs, includes: ['cover_art'] }
+    // this scrapper never fails, but returns undefined
+    const resp = await this.#scrapper
+      .getCrawler<Routes['/manga/{search}']['ok'] | Routes['/manga/{search}']['err']>(
+      requestURL, 'json', { params }
+    )
+
+    if (!resp) return Mangadex.fail(event, 'search', 'no_data')
+    if (resp.result !== 'ok') return Mangadex.fail(event, 'search', resp.errors[0].detail)
 
     resp.data.forEach(result => {
       const name = result.attributes.title[Object.keys(result.attributes.title)[0]]
@@ -80,19 +72,15 @@ export default class Mangadex implements Source {
 
       const contentRating = result.attributes.contentRating
       const isNSFW = contentRating === 'erotica' || contentRating === 'pornographic'
-      const data: searchResponse = {
-        success: true,
-        data: {
-          name,
-          url: `/manga/${result.id}`,
-          covers: coverURL ? [coverURL] : [],
-          langs: langs.length ? langs : ['xx'],
-          descriptions,
-          lastChapter: lastChapter?.chapter,
-          nsfw: isNSFW
-        }
-      }
-      event.emit('data', data)
+      Mangadex.success(event, 'search', {
+        name,
+        url: `/manga/${result.id}`,
+        covers: coverURL ? [coverURL] : [],
+        langs: langs.length ? langs : ['xx'],
+        descriptions,
+        lastChapter: lastChapter?.chapter,
+        nsfw: isNSFW
+      })
     })
     event.emit('done')
   }

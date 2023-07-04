@@ -62,24 +62,69 @@ export interface CrawlerInstance {
   ) => Promise<Buffer | cheerio.CheerioAPI | Record<string, unknown> | undefined>)
 }
 
+export interface PublicSettings {
+  /** source's filename */
+  id: string
+  displayName: string
+  /** source's version number: `int` / `float` */
+  version: number
+  /** is this a selfhosted source? */
+  localSource: boolean
+  /** does this source uses puppeteer? */
+  puppeteer: boolean
+  /** languages supported by the source */
+  langs: mirrorsLangsType[]
+  /**
+   * Source's host names
+   *
+   * @example
+   * ```ts
+   * // single hostname
+   * source.hostnames = ['mangadex.org']
+   * // multi
+   * source.hostnames = ['crappy-scan.com', 'www.crapy-scan.com']
+   * // lazy aka "I don't know what i'm doing"
+   * source.hostnames = [
+   *   new URL('https://www.crappy-scan.com/manga/72/page2/').host,
+   *   new URL('https://crapy-scan.net/search?q=crap').host
+   * ]
+   * ```
+   */
+  hostnames: string[]
+  /** weither or not the source has login capabilities */
+  login: boolean
+}
+
 export interface Source {
   search: (event: EventEmitter, query: string, requestedLangs: mirrorsLangsType[]) => Promise<unknown>
 }
 
-export interface searchResponse {
+export type SourceActions = 'search' | 'option'
+export interface ErrorResponse {
+  success: false
+  action: 'search'
+  actor: string
+  message: string
+}
+
+export interface SuccessResponse<T> {
   success: true
-  data: {
-    name: string
-    url: string
-    covers: string[]
-    langs: mirrorsLangsType[]
-    descriptions: Array<{
-      lang: mirrorsLangsType
-      synopsis: string
-    }>
-    lastChapter?: number
-    nsfw: boolean
-  }
+  action: 'search'
+  actor: string
+  data: T
+}
+
+export interface searchResponse {
+  name: string
+  url: string
+  covers: string[]
+  langs: mirrorsLangsType[]
+  descriptions: Array<{
+    lang: mirrorsLangsType
+    synopsis: string
+  }>
+  lastChapter?: number
+  nsfw: boolean
 }
 
 export type { Crawler }

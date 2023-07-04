@@ -1,6 +1,15 @@
+import { readdirSync } from 'fs'
+import { resolve } from 'path'
+
 const mode = process.env.NODE_ENV || 'production' // This now exists.
 
 const PACKAGE_ROOT = __dirname
+
+const SOURCESDIR = resolve(__dirname, 'src', 'sources')
+const SOURCES = readdirSync(SOURCESDIR)
+  .reduce((a, v) => ({ ...a, [`${v.replace(/(src\/)|(\.ts)/g, '')}`]: resolve(SOURCESDIR, v) }), {})
+
+console.log('found the following sources:', Object.keys(SOURCES))
 
 /**
  * @type {import('vite').UserConfig}
@@ -15,21 +24,24 @@ const config = {
     target: 'esnext',
     outDir: 'dist',
     lib: {
-      entry: './src/index.ts',
+      entry: {
+        index: './src/index.ts',
+        ...SOURCES
+      },
       formats: ['es']
     },
     emptyOutDir: true,
     reportCompressedSize: true,
-    ssr: true,
+    ssr: false,
     rollupOptions: {
+      preserveEntrySignatures: 'strict',
       external: [
-        '../index.js'
+        'fs', 'url', 'path', 'events'
       ],
       output: {
         entryFileNames: '[name].js',
-        assetFileNames: '[name].[ext]',
-        chunkFileNames: (id) => id.name.replace(/\.ts$|\.json$/, '.js'),
-        manualChunks: (id) => id.split('/src/')[1]
+        assetFileNames: '[name].[ext]'
+
       }
     }
   }
