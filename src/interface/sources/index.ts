@@ -96,6 +96,20 @@ export interface PublicSettings {
 }
 
 export interface Source {
+  options: {
+    arrays: Array<{
+      name: string
+      value: string[]
+    }>
+    booleans: Array<{
+      name: string
+      value: boolean
+    }>
+    credentials?: {
+      login?: string
+      password?: string
+    }
+  }
   search: (event: EventEmitter, query: string, requestedLangs: mirrorsLangsType[]) => Promise<unknown>
 }
 

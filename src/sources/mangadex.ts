@@ -19,6 +19,37 @@ export default class Mangadex extends Base {
   id = publicSettings.id
   displayName = publicSettings.displayName
 
+  options = {
+    arrays: [
+      {
+        name: 'mangadex_block_scanlator',
+        value: []
+      },
+      {
+        name: 'mangadex_block_group',
+        value: []
+      }
+    ],
+    booleans: [
+      {
+        name: 'mangadex_enable_block_group',
+        value: true
+      },
+      {
+        name: 'mangadex_enable_block_scanlator',
+        value: true
+      },
+      {
+        name: 'mangadex_erotica',
+        value: false
+      },
+      {
+        name: 'mangadex_pornographic',
+        value: false
+      }
+    ]
+  }
+
   #scrapper?: CrawlerInstance
   #baseURL = 'https://api.mangadex.org'
 
