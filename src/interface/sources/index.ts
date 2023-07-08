@@ -99,7 +99,7 @@ export interface Source {
   options: {
     arrays: Array<{
       name: string
-      value: string[]
+      value: Array<string | number>
     }>
     booleans: Array<{
       name: string
@@ -109,6 +109,11 @@ export interface Source {
       login?: string
       password?: string
     }
+  }
+  limitrate: {
+    matches: string[]
+    points: number
+    duration: number
   }
   search: (event: EventEmitter, query: string, requestedLangs: mirrorsLangsType[]) => Promise<unknown>
 }

@@ -1,7 +1,7 @@
 import type EventEmitter from 'events'
 import { mirrorsLang, type mirrorsLangsType } from 'fukayo-langs'
 import { Base } from '../abstracts/base.js'
-import type { CrawlerInstance, PublicSettings } from '../interface/sources/index.js'
+import type { PublicSettings } from '../interface/sources/index.js'
 import { type Routes } from '../interface/sources/mangadex.js'
 
 export const publicSettings: PublicSettings = {
@@ -18,6 +18,12 @@ export const publicSettings: PublicSettings = {
 export default class Mangadex extends Base {
   id = publicSettings.id
   displayName = publicSettings.displayName
+
+  limitrate = {
+    matches: [new URL('https://api.mangadex.org').host],
+    points: 5,
+    duration: 1000
+  }
 
   options = {
     arrays: [
@@ -50,12 +56,9 @@ export default class Mangadex extends Base {
     ]
   }
 
-  #scrapper?: CrawlerInstance
   #baseURL = 'https://api.mangadex.org'
 
   async search (event: EventEmitter, query: string, requestedLangs: mirrorsLangsType[]): Promise<unknown> {
-    // check if src has been imported using .getInstance
-    if (!this.#scrapper) throw Error('source must be initialized w/ getInstance()')
     // cancel signal
     let cancel = false
     event.once('cancel', () => {
@@ -73,7 +76,7 @@ export default class Mangadex extends Base {
 
     const params = { title: query, limit: 16, contentRating, order: { revelance: 'desc' }, availableTranslatedLanguage: requestedLangs, includes: ['cover_art'] }
     // this scrapper never fails, but returns undefined
-    const resp = await this.#scrapper
+    const resp = await this.wget
       .getCrawler<Routes['/manga/{search}']['ok'] | Routes['/manga/{search}']['err']>(
       requestURL, 'json', { params }
     )

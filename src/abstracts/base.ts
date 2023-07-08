@@ -5,8 +5,9 @@ import { type searchResponse } from '../interface/responses/search.js'
 import { type Crawler, type CrawlerInstance, type Source, type SourceActions } from '../interface/sources/index.js'
 
 export class Base implements Source {
+  limitrate: { matches: string[], points: number, duration: number } = { matches: [], points: 1, duration: 1000 }
   options: {
-    arrays: Array<{ name: string, value: string[] }>
+    arrays: Array<{ name: string, value: Array<string | number> }>
     booleans: Array<{ name: string, value: boolean }>
     credentials?: {
       login?: string
@@ -14,22 +15,24 @@ export class Base implements Source {
     }
   } = { arrays: [], booleans: [] }
 
-  static #instance: Base
-  #scrapper?: CrawlerInstance
-  #baseURL = ''
+  static instance: Base
+  protected scrapper?: CrawlerInstance
   id = ''
   displayName = ''
 
-  static async getInstance (crawler: Crawler): Promise<Base> {
-    if (!(this.#instance instanceof Base)) {
-      this.#instance = new this()
-      this.#instance.#scrapper = await crawler.getInstance({
-        matches: [new URL(this.#instance.#baseURL).host],
-        points: 5,
-        duration: 1000
-      })
+  get wget (): CrawlerInstance {
+    if (!this.scrapper) throw Error('source must be init via getInstance()')
+    return this.scrapper
+  }
+
+  static async getInstance (
+    crawler: Crawler
+  ): Promise<Base> {
+    if (!(this.instance instanceof Base)) {
+      this.instance = new this()
+      this.instance.scrapper = await crawler.getInstance(this.instance.limitrate)
     }
-    return this.#instance
+    return this.instance
   }
 
   static success (event: EventEmitter, action: 'option', data: optionResponse, emit: false): { success: boolean, action: 'option', actor: string, data: optionResponse }
@@ -43,7 +46,7 @@ export class Base implements Source {
     const response = {
       success: true,
       action,
-      actor: this.#instance.id,
+      actor: this.instance.id,
       data
     }
     if (emit !== false) event.emit('data', response)
@@ -56,7 +59,7 @@ export class Base implements Source {
     const response = {
       success: false,
       action,
-      actor: this.#instance.id,
+      actor: this.instance.id,
       message
     }
     if (emit !== false) event.emit('error', response)
