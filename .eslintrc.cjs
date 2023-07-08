@@ -17,5 +17,5 @@ module.exports = {
     '@typescript-eslint/no-misused-promises': 'off',
     '@typescript-eslint/no-floating-promises': 'off'
   },
-  ignorePatterns: ['env.d.ts', 'dist/**/*']
+  ignorePatterns: ['env.d.ts', 'dist/**/*', '*.spec.ts']
 }

@@ -19,16 +19,29 @@ defaults:
     shell: 'bash'
 
 jobs:
-  publish:
+  test:
     runs-on: ubuntu-latest
     outputs:
-      release-note: ${{ steps.release-note.outputs.release-note }}
-      release-note-json: ${{ steps.release-note.outputs.release-note-json }}
-      version: ${{ steps.version.outputs.build-version }}
-      draft-id: ${{ steps.draft-create.outputs.id }}
       has-updated: ${{ steps.version-updated.outputs.has-updated }}
+      current-version: ${{ steps.version-updated.outputs.current-package-version }}
     steps:
-      - name: package.json version check
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Test
+        run: |
+          npm ci
+          npm run build
+          npm run test
+      
+      - name: Check if publish is needed
         uses: JiPaix/package-json-updated-action@v1.0.5
         id: version-updated
         with:
@@ -36,30 +49,34 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  publish:
+    needs: test
+    if: ${{ needs.test.outputs.has-updated == 'true' }}
+    runs-on: ubuntu-latest
+    outputs:
+      release-note: ${{ steps.release-note.outputs.release-note }}
+      release-note-json: ${{ steps.release-note.outputs.release-note-json }}
+      version: ${{ steps.version.outputs.build-version }}
+    steps:
       - name: Checkout
-        if: steps.version-updated.outputs.has-updated == 'true'
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
       - name: Setup NodeJS
-        if: steps.version-updated.outputs.has-updated == 'true'
         uses: actions/setup-node@v3
         with:
           node-version: 16
 
       - name: Get version
-        if: steps.version-updated.outputs.has-updated == 'true'
         id: version
-        run: echo "build-version=${{steps.version-updated.outputs.current-package-version}}" >> $GITHUB_OUTPUT
+        run: echo "build-version=${{needs.test.outputs.current-version}}" >> $GITHUB_OUTPUT
 
       - name: Get last git tag
-        if: steps.version-updated.outputs.has-updated == 'true'
         id: tag
         run: echo "last-tag=$(git describe --tags --abbrev=0 --exclude "*beta" ${{github.ref}})" >> $GITHUB_OUTPUT
 
       - name: Generate release notes
-        if: steps.version-updated.outputs.has-updated == 'true'
         uses: ./.github/actions/release-notes
         id: release-note
         with:
@@ -69,20 +86,17 @@ jobs:
           include-abbreviated-commit: true
 
       - name: Delete outdated drafts
-        if: steps.version-updated.outputs.has-updated == 'true'
         uses: hugo19941994/delete-draft-releases@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build
-        if: steps.version-updated.outputs.has-updated == 'true'
         run: |
           npm ci
           npm run build
           npm run start -- v${{ steps.version.outputs.build-version }}
 
       - name: Create Release
-        if: steps.version-updated.outputs.has-updated == 'true'
         uses: ncipollo/release-action@v1.12.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
