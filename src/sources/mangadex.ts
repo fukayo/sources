@@ -81,8 +81,8 @@ export default class Mangadex extends Base {
       requestURL, 'json', { params }
     )
 
-    if (!resp) return Mangadex.fail(event, 'search', 'no_data')
-    if (resp.result !== 'ok') return Mangadex.fail(event, 'search', resp.errors[0].detail)
+    if (!resp) return this.fail(event, 'search', 'no_data')
+    if (resp.result !== 'ok') return this.fail(event, 'search', resp.errors[0].detail)
 
     resp.data.forEach(result => {
       const name = result.attributes.title[Object.keys(result.attributes.title)[0]]
@@ -106,7 +106,7 @@ export default class Mangadex extends Base {
 
       const contentRating = result.attributes.contentRating
       const isNSFW = contentRating === 'erotica' || contentRating === 'pornographic'
-      Mangadex.success(event, 'search', {
+      this.success(event, 'search', {
         name,
         url: `/manga/${result.id}`,
         covers: coverURL ? [coverURL] : [],

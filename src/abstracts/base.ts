@@ -35,9 +35,9 @@ export class Base implements Source {
     return this.instance
   }
 
-  static success (event: EventEmitter, action: 'option', data: optionResponse, emit: false): { success: boolean, action: 'option', actor: string, data: optionResponse }
-  static success (event: EventEmitter, action: 'search', data: searchResponse): void
-  static success (event: EventEmitter, action: SourceActions, data: searchResponse | optionResponse, emit?: boolean): {
+  success (event: EventEmitter, action: 'option', data: optionResponse, emit: false): { success: boolean, action: 'option', actor: string, data: optionResponse }
+  success (event: EventEmitter, action: 'search', data: searchResponse): void
+  success (event: EventEmitter, action: SourceActions, data: searchResponse | optionResponse, emit?: boolean): {
     success: boolean
     action: SourceActions
     actor: string
@@ -46,20 +46,20 @@ export class Base implements Source {
     const response = {
       success: true,
       action,
-      actor: this.instance.id,
+      actor: this.id,
       data
     }
     if (emit !== false) event.emit('data', response)
     return response
   }
 
-  static fail (event: EventEmitter, action: 'option', message: string, emit: false): { success: false, action: 'option', actor: string, message: string }
-  static fail (event: EventEmitter, action: 'search', message: string): void
-  static fail (event: EventEmitter, action: SourceActions, message: string, emit?: boolean): { success: boolean, action: SourceActions, actor: string, message: string } {
+  fail (event: EventEmitter, action: 'option', message: string, emit: false): { success: false, action: 'option', actor: string, message: string }
+  fail (event: EventEmitter, action: 'search', message: string): void
+  fail (event: EventEmitter, action: SourceActions, message: string, emit?: boolean): { success: boolean, action: SourceActions, actor: string, message: string } {
     const response = {
       success: false,
       action,
-      actor: this.instance.id,
+      actor: this.id,
       message
     }
     if (emit !== false) event.emit('error', response)
@@ -73,15 +73,15 @@ export class Base implements Source {
   setOption (event: EventEmitter, optionName: string, value: unknown): { success: false, action: 'option', actor: string, message: string } | { success: boolean, action: 'option', actor: string, data: optionResponse } {
     if (optionName === 'credentials') {
       if (typeof value === 'undefined') this.options.credentials = value
-      if (!(value instanceof Object)) return Base.fail(event, 'option', 'bad_value', false)
+      if (!(value instanceof Object)) return this.fail(event, 'option', 'bad_value', false)
       const hasLogin = Object.prototype.hasOwnProperty.call(value, 'login')
       const hasPassword = Object.prototype.hasOwnProperty.call(value, 'password')
-      if (!hasLogin || !hasPassword) return Base.fail(event, 'option', 'missing_value', false)
+      if (!hasLogin || !hasPassword) return this.fail(event, 'option', 'missing_value', false)
       const asserted = value as Partial<{ login: unknown, password: unknown }>
       const { login, password } = asserted
       if (typeof login === 'string' && typeof password === 'string') this.options.credentials = { login, password }
-      else return Base.fail(event, 'option', 'bad_value', false)
-      return Base.success(event, 'option', { optionName, newValue: value }, false)
+      else return this.fail(event, 'option', 'bad_value', false)
+      return this.success(event, 'option', { optionName, newValue: value }, false)
     }
 
     const findArray = this.options.arrays.find(f => f.name === optionName)
@@ -89,15 +89,15 @@ export class Base implements Source {
 
     if (findArray) {
       if (Array.isArray(value) && value.every(v => typeof v === 'string')) findArray.value = value
-      else return Base.fail(event, 'option', 'bad_value', false)
+      else return this.fail(event, 'option', 'bad_value', false)
     }
 
     if (findBoolean) {
       if (typeof value === 'boolean') findBoolean.value = value
-      else return Base.fail(event, 'option', 'bad_value', false)
+      else return this.fail(event, 'option', 'bad_value', false)
     }
 
-    return Base.fail(event, 'option', 'bad_option', false)
+    return this.fail(event, 'option', 'bad_option', false)
   }
 
   async search (event: EventEmitter, query: string, requestedLangs: mirrorsLangsType[]): Promise<unknown> {
