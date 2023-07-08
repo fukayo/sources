@@ -1,6 +1,5 @@
 import { type EventEmitter } from 'events'
 import { type mirrorsLangsType } from 'fukayo-langs'
-import { type optionResponse } from '../interface/responses/options.js'
 import { type searchResponse } from '../interface/responses/search.js'
 import { type Crawler, type CrawlerInstance, type Source, type SourceActions } from '../interface/sources/index.js'
 
@@ -35,13 +34,13 @@ export class Base implements Source {
     return this.instance
   }
 
-  success (event: EventEmitter, action: 'option', data: optionResponse, emit: false): { success: boolean, action: 'option', actor: string, data: optionResponse }
+  success (event: EventEmitter, action: 'option', data: Base['options'], emit: false): { success: boolean, action: 'option', actor: string, data: Base['options'] }
   success (event: EventEmitter, action: 'search', data: searchResponse): void
-  success (event: EventEmitter, action: SourceActions, data: searchResponse | optionResponse, emit?: boolean): {
+  success (event: EventEmitter, action: SourceActions, data: searchResponse | Base['options'], emit?: boolean): {
     success: boolean
     action: SourceActions
     actor: string
-    data: optionResponse | searchResponse
+    data: Base['options'] | searchResponse
   } {
     const response = {
       success: true,
@@ -53,7 +52,7 @@ export class Base implements Source {
     return response
   }
 
-  fail (event: EventEmitter, action: 'option', message: string, emit: false): { success: false, action: 'option', actor: string, message: string }
+  fail (event: EventEmitter, action: 'option', message: string, emit: true): { success: false, action: 'option', actor: string, message: string }
   fail (event: EventEmitter, action: 'search', message: string): void
   fail (event: EventEmitter, action: SourceActions, message: string, emit?: boolean): { success: boolean, action: SourceActions, actor: string, message: string } {
     const response = {
@@ -70,18 +69,18 @@ export class Base implements Source {
     event.emit('done')
   }
 
-  setOption (event: EventEmitter, optionName: string, value: unknown): { success: false, action: 'option', actor: string, message: string } | { success: boolean, action: 'option', actor: string, data: optionResponse } {
+  setOption (event: EventEmitter, optionName: string, value: unknown): { success: false, action: 'option', actor: string, message: string } | { success: boolean, action: 'option', actor: string, data: Base['options'] } {
     if (optionName === 'credentials') {
       if (typeof value === 'undefined') this.options.credentials = value
-      if (!(value instanceof Object)) return this.fail(event, 'option', 'bad_value', false)
+      if (!(value instanceof Object)) return this.fail(event, 'option', 'bad_value', true)
       const hasLogin = Object.prototype.hasOwnProperty.call(value, 'login')
       const hasPassword = Object.prototype.hasOwnProperty.call(value, 'password')
-      if (!hasLogin || !hasPassword) return this.fail(event, 'option', 'missing_value', false)
+      if (!hasLogin || !hasPassword) return this.fail(event, 'option', 'missing_value', true)
       const asserted = value as Partial<{ login: unknown, password: unknown }>
       const { login, password } = asserted
       if (typeof login === 'string' && typeof password === 'string') this.options.credentials = { login, password }
-      else return this.fail(event, 'option', 'bad_value', false)
-      return this.success(event, 'option', { optionName, newValue: value }, false)
+      else return this.fail(event, 'option', 'bad_value', true)
+      return this.success(event, 'option', this.options, false)
     }
 
     const findArray = this.options.arrays.find(f => f.name === optionName)
@@ -89,15 +88,15 @@ export class Base implements Source {
 
     if (findArray) {
       if (Array.isArray(value) && value.every(v => typeof v === 'string')) findArray.value = value
-      else return this.fail(event, 'option', 'bad_value', false)
+      else return this.fail(event, 'option', 'bad_value', true)
     }
 
     if (findBoolean) {
       if (typeof value === 'boolean') findBoolean.value = value
-      else return this.fail(event, 'option', 'bad_value', false)
+      else return this.fail(event, 'option', 'bad_value', true)
     }
 
-    return this.fail(event, 'option', 'bad_option', false)
+    return this.fail(event, 'option', 'bad_option', true)
   }
 
   async search (event: EventEmitter, query: string, requestedLangs: mirrorsLangsType[]): Promise<unknown> {
