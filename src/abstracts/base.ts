@@ -20,8 +20,8 @@ export class Base implements Source {
   displayName = ''
 
   get options (): Base['settings'] {
-    if (this.options.credentials) return { ...this.options, credentials: { login: this.options.credentials.login, password: 'HIDDEN' } }
-    else return this.options
+    if (this.settings.credentials) return { ...this.options, credentials: { login: this.settings.credentials.login, password: 'HIDDEN' } }
+    else return this.settings
   }
 
   get wget (): CrawlerInstance {
