@@ -34,14 +34,17 @@ jobs:
         with:
           node-version: 16
    
+      - name: Install
+        run: npm ci
+        
       - name: Typecheck
         run: npm run typecheck
      
+      - name: Build
+        run: npm run build
+
       - name: Test
-        run: |
-          npm ci
-          npm run build
-          npm run test
+        run: npm run test
       
       - name: Check if publish is needed
         uses: JiPaix/package-json-updated-action@v1.0.5
