@@ -5,7 +5,7 @@ import { type Crawler, type CrawlerInstance, type Source, type SourceActions } f
 
 export class Base implements Source {
   limitrate: { matches: string[], points: number, duration: number } = { matches: [], points: 1, duration: 1000 }
-  options: {
+  settings: {
     arrays: Array<{ name: string, value: Array<string | number> }>
     booleans: Array<{ name: string, value: boolean }>
     credentials?: {
@@ -18,6 +18,11 @@ export class Base implements Source {
   protected scrapper?: CrawlerInstance
   id = ''
   displayName = ''
+
+  get options (): Base['settings'] {
+    if (this.options.credentials) return { ...this.options, credentials: { login: this.options.credentials.login, password: 'HIDDEN' } }
+    else return this.options
+  }
 
   get wget (): CrawlerInstance {
     if (!this.scrapper) throw Error('source must be init via getInstance()')
@@ -75,12 +80,23 @@ export class Base implements Source {
       if (!(value instanceof Object)) return this.fail(event, 'option', 'bad_value')
       const hasLogin = Object.prototype.hasOwnProperty.call(value, 'login')
       const hasPassword = Object.prototype.hasOwnProperty.call(value, 'password')
-      if (!hasLogin || !hasPassword) return this.fail(event, 'option', 'missing_value')
+
+      if (!hasLogin || !hasPassword) return this.fail(event, 'option', 'bad_value')
+
       const asserted = value as Partial<{ login: unknown, password: unknown }>
       const { login, password } = asserted
-      if (typeof login === 'string' && typeof password === 'string') this.options.credentials = { login, password }
-      else return this.fail(event, 'option', 'bad_value')
-      return this.success(event, 'option', this.options)
+
+      const goodLogin = typeof login === 'string' || login === null
+      const goodPwd = (typeof password === 'string' && password !== 'HIDDEN') || password === null
+
+      if (goodLogin || goodPwd) {
+        this.settings.credentials = {
+          login: goodLogin ? login : this.settings.credentials?.login ?? null,
+          password: goodPwd ? password : this.settings.credentials?.login ?? null
+        }
+        return this.success(event, 'option', this.options)
+      }
+      return this.fail(event, 'option', 'bad_value')
     }
 
     const findArray = this.options.arrays.find(f => f.name === optionName)

@@ -25,7 +25,7 @@ export default class Mangadex extends Base {
     duration: 1000
   }
 
-  options = {
+  settings = {
     arrays: [
       {
         name: 'mangadex_block_scanlator',
@@ -53,7 +53,11 @@ export default class Mangadex extends Base {
         name: 'mangadex_pornographic',
         value: false
       }
-    ]
+    ],
+    credentials: {
+      login: null,
+      password: null
+    }
   }
 
   #baseURL = 'https://api.mangadex.org'

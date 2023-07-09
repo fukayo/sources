@@ -96,7 +96,7 @@ export interface PublicSettings {
 }
 
 export interface Source {
-  options: {
+  settings: {
     arrays: Array<{
       name: string
       value: Array<string | number>
@@ -106,8 +106,8 @@ export interface Source {
       value: boolean
     }>
     credentials?: {
-      login?: string
-      password?: string
+      login: string | null
+      password: string | null
     }
   }
   limitrate: {
