@@ -17,7 +17,8 @@ defaults:
     shell: 'bash'
 
 jobs:
-  test:
+  test_and_release:
+    name: "Test and release if needed"
     runs-on: ubuntu-latest
     outputs:
       has-updated: ${{ steps.version-updated.outputs.has-updated }}
@@ -32,7 +33,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
-
+   
+      - name: Typecheck
+        run: npm run typecheck
+     
       - name: Test
         run: |
           npm ci
@@ -47,36 +51,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  publish:
-    needs: test
-    if: ${{ needs.test.outputs.has-updated == 'true' }}
-    runs-on: ubuntu-latest
-    outputs:
-      release-note: ${{ steps.release-note.outputs.release-note }}
-      release-note-json: ${{ steps.release-note.outputs.release-note-json }}
-      version: ${{ steps.version.outputs.build-version }}
-      last-tag: ${{ steps.tag.outputs.last-tag }}
-      build-version: ${{ steps.version.outputs.build-version }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Setup NodeJS
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-
-      - name: Get version
-        id: version
-        run: echo "build-version=${{needs.test.outputs.current-version}}-beta" >> $GITHUB_OUTPUT
-
-      - name: Get last git tag
+      - name: Get last published version
+        if: steps.version-updated.outputs.has-updated
         id: tag
         run: echo "last-tag=$(git describe --tags --abbrev=0 --match "*-beta" ${{github.ref}})" >> $GITHUB_OUTPUT
+  
+      - name: Set target version
+        if: steps.version-updated.outputs.has-updated
+        id: version
+        run: echo "build-version=${{steps.version-updated.outputs.current-package-version}}-beta" >> $GITHUB_OUTPUT
 
       - name: Generate release notes
+        if: steps.version-updated.outputs.has-updated
         uses: ./.github/actions/release-notes
         id: release-note
         with:
@@ -86,17 +72,17 @@ jobs:
           include-abbreviated-commit: true
 
       - name: Delete outdated drafts
+        if: steps.version-updated.outputs.has-updated
         uses: hugo19941994/delete-draft-releases@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build
-        run: |
-          npm ci
-          npm run build
-          npm run start -- v${{ steps.version.outputs.build-version }}
+      - name: Prepare artifacts
+        if: steps.version-updated.outputs.has-updated
+        run: npm run start -- v${{ steps.version.outputs.build-version }}
 
       - name: Create Release
+        if: steps.version-updated.outputs.has-updated
         uses: ncipollo/release-action@v1.12.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
