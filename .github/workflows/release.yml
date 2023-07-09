@@ -47,6 +47,7 @@ jobs:
         run: npm run test
       
       - name: Check if publish is needed
+        if: github.event_name != 'pull_request'
         uses: JiPaix/package-json-updated-action@v1.0.5
         id: version-updated
         with:
