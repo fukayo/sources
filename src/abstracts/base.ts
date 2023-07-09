@@ -36,6 +36,10 @@ export class Base implements Source {
     this.settings = value
   }
 
+  get optionsUnsafe (): Base['settings'] {
+    return this.settings
+  }
+
   get wget (): CrawlerInstance {
     if (!this.scrapper) throw Error('source must be init via getInstance()')
     return this.scrapper
