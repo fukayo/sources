@@ -18,7 +18,7 @@ async function parseSources (): Promise<Array<{
   baseURL: string
   js: string
   icon: string
-  id: string
+  name: string
   displayName: string
   version: number
   localSource: boolean

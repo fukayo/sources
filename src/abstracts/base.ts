@@ -15,13 +15,25 @@ export class Base implements Source {
   } = { arrays: [], booleans: [] }
 
   static instance: Base
-  protected scrapper?: CrawlerInstance
-  id = ''
+  private scrapper?: CrawlerInstance
+  name = ''
   displayName = ''
+  langs = mirrorsLang.map(x => x)
 
   get options (): Base['settings'] {
-    if (this.settings.credentials) return { ...this.settings, credentials: { login: this.settings.credentials.login, password: 'HIDDEN' } }
-    else return this.settings
+    if (this.settings.credentials) {
+      return {
+        ...this.settings,
+        credentials: {
+          login: this.settings.credentials.login,
+          password: this.settings.credentials.password === null ? null : 'HIDDEN'
+        }
+      }
+    } else return this.settings
+  }
+
+  set options (value) {
+    this.settings = value
   }
 
   get wget (): CrawlerInstance {
@@ -50,7 +62,7 @@ export class Base implements Source {
     const response = {
       success: true,
       action,
-      actor: this.id,
+      actor: this.name,
       data
     }
     event.emit('data', response)
@@ -63,14 +75,14 @@ export class Base implements Source {
     const response = {
       success: false,
       action,
-      actor: this.id,
+      actor: this.name,
       message
     }
     event.emit('error', response)
     return response
   }
 
-  static done (event: EventEmitter): void {
+  done (event: EventEmitter): void {
     event.emit('done')
   }
 

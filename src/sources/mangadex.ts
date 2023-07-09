@@ -5,7 +5,7 @@ import type { PublicSettings } from '@interfaces/sources/index.js'
 import { type Routes } from '@interfaces/sources/mangadex.js'
 
 export const publicSettings: PublicSettings = {
-  id: 'mangadex',
+  name: 'mangadex',
   displayName: 'Mangadex',
   login: true,
   version: 0,
@@ -16,9 +16,9 @@ export const publicSettings: PublicSettings = {
 }
 
 export default class Mangadex extends Base {
-  id = publicSettings.id
+  name = publicSettings.name
   displayName = publicSettings.displayName
-
+  langs = publicSettings.langs
   limitrate = {
     matches: [new URL('https://api.mangadex.org').host],
     points: 5,
