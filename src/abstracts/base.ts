@@ -20,7 +20,7 @@ export class Base implements Source {
   displayName = ''
 
   get options (): Base['settings'] {
-    if (this.settings.credentials) return { ...this.options, credentials: { login: this.settings.credentials.login, password: 'HIDDEN' } }
+    if (this.settings.credentials) return { ...this.settings, credentials: { login: this.settings.credentials.login, password: 'HIDDEN' } }
     else return this.settings
   }
 
