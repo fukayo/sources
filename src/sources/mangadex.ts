@@ -1,8 +1,8 @@
 import type EventEmitter from 'events'
 import { mirrorsLang, type mirrorsLangsType } from 'fukayo-langs'
-import { Base } from '../abstracts/base.js'
-import type { PublicSettings } from '../interface/sources/index.js'
-import { type Routes } from '../interface/sources/mangadex.js'
+import { Base } from '@abstracts/base.js'
+import type { PublicSettings } from '@interfaces/sources/index.js'
+import { type Routes } from '@interfaces/sources/mangadex.js'
 
 export const publicSettings: PublicSettings = {
   id: 'mangadex',

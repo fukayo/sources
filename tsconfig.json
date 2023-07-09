@@ -16,6 +16,10 @@
     "outDir": "./dist",
     "rootDir": "src",
     "baseUrl": "./",
+    "paths": {
+      "@abstracts/*": ["src/abstracts/*"],
+      "@interfaces/*": ["src/interfaces/*"],
+    },
     "typeRoots": ["./node_modules/@types/", "./types", "./node_modules"],
     "types": ["vite/client"]
   },

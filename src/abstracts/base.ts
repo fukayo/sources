@@ -1,7 +1,7 @@
 import { type EventEmitter } from 'events'
-import { type mirrorsLangsType } from 'fukayo-langs'
-import { type searchResponse } from '../interface/responses/search.js'
-import { type Crawler, type CrawlerInstance, type Source, type SourceActions } from '../interface/sources/index.js'
+import { type searchResponse } from '@interfaces/responses/search.js'
+import { type Source, type Crawler, type CrawlerInstance, type SourceActions } from '@interfaces/sources/index.js'
+import { mirrorsLang } from 'fukayo-langs'
 
 export class Base implements Source {
   limitrate: { matches: string[], points: number, duration: number } = { matches: [], points: 1, duration: 1000 }

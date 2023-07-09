@@ -1,5 +1,5 @@
 import { readdirSync } from 'fs'
-import { resolve } from 'path'
+import { resolve, join } from 'path'
 
 const mode = process.env.NODE_ENV || 'production' // This now exists.
 
@@ -20,6 +20,12 @@ const config = {
   root: PACKAGE_ROOT,
   envDir: process.cwd(),
   publicDir: './src/public',
+  resolve: {
+    alias: {
+      '@abstracts': join(PACKAGE_ROOT, 'src', 'abstracts'),
+      '@interfaces': join(PACKAGE_ROOT, 'src', 'interfaces')
+    }
+  },
   build: {
     target: 'esnext',
     outDir: 'dist',

@@ -64,7 +64,7 @@ export interface CrawlerInstance {
 
 export interface PublicSettings {
   /** source's filename */
-  id: string
+  name: string
   displayName: string
   /** source's version number: `int` / `float` */
   version: number
