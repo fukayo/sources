@@ -3,8 +3,7 @@
 import { test, beforeAll } from 'vitest'
 import { type PublicSettings } from '../src/interface/sources/index'
 import { Base } from '../src/abstracts/base'
-import { mirrorsLang, type mirrorsLangsType } from 'fukayo-langs'
-import { isAsyncFunction } from 'util/types'
+import { mirrorsLang } from 'fukayo-langs'
 
 class dummyCrawler {
   static instance: any
