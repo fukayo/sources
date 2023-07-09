@@ -55,7 +55,6 @@ test('definitions', () => {
     const goodMatches = instance.limitrate.matches.every(m => {
       try {
         const url = new URL('http://'+m)
-        console.log(url)
         return url.pathname === "/" && url.search === ""
       } catch {
         return false
