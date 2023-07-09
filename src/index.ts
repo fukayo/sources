@@ -1,8 +1,8 @@
+import { type PublicSettings } from '@interfaces/sources/index.js'
 import { readdirSync, rmSync, writeFileSync } from 'fs'
 import { type mirrorsLangsType } from 'fukayo-langs'
 import { dirname, parse, resolve } from 'path'
 import { fileURLToPath, pathToFileURL } from 'url'
-import { type PublicSettings } from '@interfaces/sources/index.js'
 
 const args = process.argv.slice(2)
 if (!args[0]?.startsWith('v')) throw Error(`bad tag:${args[0]}`)
