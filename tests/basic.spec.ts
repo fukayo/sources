@@ -100,11 +100,3 @@ test('compare public settings vs source definition', () => {
     if(!publicSettings.langs.every(l => instance.langs.includes(l)) || !instance.langs.every(l => publicSettings.langs.includes(l))) throw Error(`publicSettings and Source "langs" aren't the same: @ ${instance.name}`)
   }
 })
-
-test('print options', () => {
-  for(const src of instances) {
-
-    const { instance } = src
-    console.log(instance.limitrate)
-  }
-})
