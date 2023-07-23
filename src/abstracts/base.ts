@@ -40,9 +40,14 @@ export class Base implements Source {
     return this.settings
   }
 
-  get wget (): CrawlerInstance {
+  get wget (): CrawlerInstance['getCrawler'] {
     if (!this.scrapper) throw Error('source must be init via getInstance()')
-    return this.scrapper
+    return this.scrapper.getCrawler
+  }
+
+  get puppeteer (): CrawlerInstance['getPuppeteer'] {
+    if (!this.scrapper) throw Error('source must be init via getInstance()')
+    return this.scrapper.getPuppeteer
   }
 
   static async getInstance (
