@@ -12,7 +12,7 @@ export const publicSettings: PublicSettings = {
   localSource: false,
   puppeteer: false,
   langs: mirrorsLang.map(x => x), // <= .map fixes typescript non-sense,
-  hostnames: ['mangadex.org']
+  hostnames: ['mangadex.org', 'api.mangadex.org']
 }
 
 export default class Mangadex extends Base {
