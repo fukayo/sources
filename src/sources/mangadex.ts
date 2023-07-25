@@ -80,7 +80,7 @@ export default class Mangadex extends Base {
 
     const params = { title: query, limit: 16, contentRating, order: { revelance: 'desc' }, availableTranslatedLanguage: requestedLangs, includes: ['cover_art'] }
     // this scrapper never fails, but returns undefined
-    const resp = await this.wget<Routes['/manga/{search}']['ok'] | Routes['/manga/{search}']['err']>(
+    const resp = await this.wget.getCrawler<Routes['/manga/{search}']['ok'] | Routes['/manga/{search}']['err']>(
       requestURL, 'json', { params }
     )
 
@@ -117,7 +117,7 @@ export default class Mangadex extends Base {
 
       const coverRes = coverData.map(async cover => {
         const url = `https://mangadex.org/covers/${result.id}/${cover.attributes.fileName}.512.jpg`
-        await this.wget(url, 'img')
+        await this.wget.getCrawler(url, 'img')
         return url
       })
 
