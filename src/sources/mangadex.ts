@@ -78,7 +78,7 @@ export default class Mangadex extends Base {
     if (this.options?.booleans?.find(f => f.name === 'mangadex_erotica')?.value === true) contentRating.push('erotica')
     if (this.options?.booleans?.find(f => f.name === 'mangadex_pornographic')?.value === true) contentRating.push('pornographic')
 
-    const params = { title: query, limit: 16, contentRating, order: { revelance: 'desc' }, availableTranslatedLanguage: requestedLangs, includes: ['cover_art'] }
+    const params = { title: query, limit: 16, contentRating, availableTranslatedLanguage: requestedLangs, includes: ['cover_art'] }
     // this scrapper never fails, but returns undefined
     const resp = await this.wget.getCrawler<Routes['/manga/{search}']['ok'] | Routes['/manga/{search}']['err']>(
       requestURL, 'json', { params }
