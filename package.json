@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "npm run build:prod",
-    "test": "vitest run",
+    "test": "npm run typecheck && vitest run",
     "build:dev": "cross-env NODE_ENV=development vite build --mode development",
     "build:prod": "cross-env NODE_ENV=production vite build --mode production",
     "release:patch": "git pull && npm run test && node ./scripts/release.js --patch",
