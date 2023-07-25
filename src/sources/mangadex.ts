@@ -87,11 +87,8 @@ export default class Mangadex extends Base {
     if (!resp) return this.fail(event, 'search', 'no_data')
     if (resp.result !== 'ok') return this.fail(event, 'search', resp.errors[0].detail)
 
-    resp.data.forEach(result => {
+    const pendingResults = resp.data.map(async result => {
       const name = result.attributes.title[Object.keys(result.attributes.title)[0]]
-      let coverURL: undefined | string
-      const coverData = result.relationships.find(x => x.type === 'cover_art')
-      if (coverData && coverData.type === 'cover_art') coverURL = coverData.attributes.fileName
       // search for synopsis that matches requestedLangs
       const descriptions = requestedLangs.map(m => {
         return {
@@ -101,23 +98,46 @@ export default class Mangadex extends Base {
       }).filter(f => f.synopsis) as Array<{ lang: mirrorsLangsType, synopsis: string }>
 
       const lastChapter =
-        result.attributes.lastChapter && isNaN(parseFloat(result.attributes.lastChapter))
-          ? { chapter: parseFloat(result.attributes.lastChapter) }
-          : undefined
+      result.attributes.lastChapter && isNaN(parseFloat(result.attributes.lastChapter))
+        ? { chapter: parseFloat(result.attributes.lastChapter) }
+        : undefined
 
       const langs = result.attributes.availableTranslatedLanguages.filter(l => requestedLangs.includes(l))
 
       const contentRating = result.attributes.contentRating
       const isNSFW = contentRating === 'erotica' || contentRating === 'pornographic'
-      this.success(event, 'search', {
+
+      const coverData = result.relationships.filter(x => x.type === 'cover_art') as Array<{
+        id: string
+        type: 'cover_art'
+        attributes: {
+          fileName: string
+        }
+      }>
+
+      const coverRes = coverData.map(async cover => {
+        const url = `https://mangadex.org/covers/${result.id}/${cover.attributes.fileName}.512.jpg`
+        await this.wget(url, 'img')
+        return url
+      })
+
+      const covers = await Promise.all(coverRes)
+
+      return {
         name,
         url: `/manga/${result.id}`,
-        covers: coverURL ? [coverURL] : [],
-        langs: langs.length ? langs : ['xx'],
+        covers,
+        langs: langs.length ? langs : ['xx'] as unknown as mirrorsLangsType[],
         descriptions,
         lastChapter: lastChapter?.chapter,
         nsfw: isNSFW
-      })
+      }
+    })
+
+    const results = await Promise.all(pendingResults)
+
+    results.forEach(r => {
+      this.success(event, 'search', r)
     })
     event.emit('done')
   }
